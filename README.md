@@ -77,8 +77,7 @@ Thank you for your interest and support. Together, we can make WP Algolia Search
 
 ## Changelog
 
-### [0.1.0] - 2024-07-24
-- Released version 0.1.0 featuring multilingual capabilities and a rudimentary plugin page within the WordPress admin dashboard.
+For detailed release notes, see the [CHANGELOG](CHANGELOG.md) file.
 
 ## License
 
