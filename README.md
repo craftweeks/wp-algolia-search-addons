@@ -1,6 +1,6 @@
 # WP Algolia Search Addons
 
-**WP Algolia Search Addons** is an experimental extension for the [WP Search with Algolia] plugin, available on WordPress.org. This add-on seamlessly connects Algolia with popular plugins like [Polylang] and [WP2Static], enhancing search functionality and improving user experience.\
+**WP Algolia Search Addons** is an experimental extension for the [WP Search with Algolia] plugin, available on WordPress.org. This add-on seamlessly connects Algolia with popular plugins like [Polylang] and [WP2Static], enhancing search functionality and improving user experience.
 
 [WP Search with Algolia]: https://wordpress.org/plugins/wp-search-with-algolia/
 [Polylang]: https://wordpress.org/plugins/polylang/
@@ -19,6 +19,12 @@
 ## Features
 
 - **Multilingual Support**: Integrates with Polylang to deliver locale-specific search results and suggestions, ensuring a tailored user experience for multilingual websites.
+
+  1. **Locale Attributes**: Integrates Polylang locale attributes for locale-based search filtering
+  2. **Language-Specific Search**: Delivers search results relevant to user's selected language
+  3. **Faceted Search by Locale**: Enables locale-based faceted search for refined results
+  4. **Autocomplete with Locale**: Provides locale-filtered autocomplete suggestions for multilingual users
+
 - **WP-to-Static Support**: Rewrites site URLs with deployment URLs for static site generation. *(Coming Soon)*
 - **Exclude from Indexing**: Allows exclusion of specific posts and pages from being indexed by Algolia, offering greater control over search results. *(Coming Soon)*
 
