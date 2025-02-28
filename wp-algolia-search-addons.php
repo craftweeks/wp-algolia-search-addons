@@ -30,6 +30,29 @@ if (!defined('ALGOLIA_ADDONS_PATH_TEMPLATE_PATH')) {
     );
 }
 
+// Exclude Specific Pages From Post Indexing in Algolia
+function custom_should_index_post( $should_index, WP_Post $post ) {
+    if ( false === $should_index ) {
+        return $should_index;
+    }
+
+    if ( $post->post_type !== 'page' ) {
+        return $should_index;
+    }
+
+    // Get excluded posts from settings
+    $posts_to_exclude = get_option('algolia_addons_excluded_posts', array());
+
+    if (in_array($post->ID, $posts_to_exclude, TRUE)) {
+        return false;
+    }
+
+    return $should_index;
+}
+// Alter both the posts index and the searchable_posts index for Algolia. 
+add_filter('algolia_should_index_post', 'custom_should_index_post', 10, 2);
+add_filter('algolia_should_index_searchable_post', 'custom_should_index_post', 10, 2);
+
 // Function to load the autocomplete template.
 function load_autocomplete_template($location, $file)
 {
@@ -76,6 +99,12 @@ function enqueue_locale() {
     wp_add_inline_script( 'algolia-search', sprintf('var current_locale = "%s";', $current_locale), 'before' );
 }
 add_action('wp_enqueue_scripts', 'enqueue_locale', 99);
+
+// Register plugin settings
+function algolia_addons_register_settings() {
+    register_setting('algolia_addons_settings', 'algolia_addons_excluded_posts');
+}
+add_action('admin_init', 'algolia_addons_register_settings');
 
 // Include the admin page
 function add_plugin_menu() {

@@ -1,17 +1,193 @@
 <?php
+if (!current_user_can('manage_options')) {
+    return;
+}
 
+// Save settings if form was submitted
+if (isset($_POST['algolia_addons_save_settings'])) {
+    check_admin_referer('algolia_addons_settings');
+    
+    $excluded_posts = isset($_POST['excluded_posts']) ? array_map('intval', $_POST['excluded_posts']) : array();
+    update_option('algolia_addons_excluded_posts', $excluded_posts);
+    
+    echo '<div class="notice notice-success is-dismissible"><p>Settings saved successfully!</p></div>';
+}
+
+// Get current settings
+$excluded_posts = get_option('algolia_addons_excluded_posts', array());
+// Get all published pages
+$pages = get_posts(array(
+    'post_type' => 'page',
+    'post_status' => 'publish',
+    'posts_per_page' => -1,
+));
+
+// Enqueue required scripts and styles
+wp_enqueue_style('wp-jquery-ui-dialog');
+wp_enqueue_script('jquery-ui-dialog');
 ?>
+
+<style>
+.multiselect-container {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    margin: 0 0 20px 0;
+    max-width: 800px;
+}
+.multiselect-box {
+    flex: 1;
+    min-width: 200px;
+}
+.multiselect-box select {
+    width: 100%;
+    resize: vertical;
+    min-height: 250px; /* Height for approximately 10 items */
+    max-height: 600px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+}
+.multiselect-box select option {
+    padding: 4px 8px;
+}
+.multiselect-box select option:hover {
+    background-color: #f0f0f0;
+}
+.multiselect-controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+}
+.multiselect-controls button {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.multiselect-controls button:hover {
+    background: #f0f0f0;
+    border-color: #999;
+}
+.multiselect-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+</style>
 
 <div class="wrap">
     <h1>WP Algolia Search Addons</h1>
 
-    <p>The "WP Algolia Search Addons" is a plugin to enhance the search functionality of WordPress websites using Algolia. This plugin is specifically designed to integrate seamlessly with the Polylang plugin, providing a powerful and efficient multilingual search experience.</p>
+    <p>The "WP Algolia Search Addons" enhances the search functionality of WordPress websites using Algolia.</p>
 
-    <h2>Integration with Polylang:</h2>
-    <ol>
-        <li><strong>Locale Attributes:</strong> The plugin integrates locale attributes from Polylang, allowing users to filter search results based on the displayed locale.</li>
-        <li><strong>Language-Specific Search:</strong> Ensures that search results are relevant to the user's selected language, enhancing the overall user experience.</li>
-        <li><strong>Faceted Search by Locale:</strong> Supports faceted search that includes locale as a facet, enabling users to refine search results by language.</li>
-        <li><strong>Autocomplete with Locale:</strong> Provides autocomplete suggestions that are filtered based on the current locale, ensuring relevant suggestions for multilingual users.</li>
-    </ol>
+    <hr/>
+
+    <form method="post" action="">
+        <?php wp_nonce_field('algolia_addons_settings'); ?>
+
+        <h2 class="title">Exclude Pages from Indexing</h2>
+        <p class="description">Select pages that should be excluded from Algolia search indexing.</p>
+        
+        <div class="multiselect-container">
+            <div class="multiselect-box">
+                <h4>Available Pages</h4>
+                <select id="available-pages" multiple>
+                    <?php foreach ($pages as $page): 
+                        if (!in_array($page->ID, $excluded_posts)): ?>
+                            <option value="<?php echo esc_attr($page->ID); ?>">
+                                <?php echo esc_html($page->post_title); ?> (ID: <?php echo esc_html($page->ID); ?>)
+                            </option>
+                        <?php endif;
+                    endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="multiselect-controls">
+                <button type="button" id="add-pages" aria-label="Move selected pages to excluded list">›</button>
+                <button type="button" id="remove-pages" aria-label="Move selected pages to available list">‹</button>
+            </div>
+            
+            <div class="multiselect-box">
+                <h4>Excluded Pages</h4>
+                <select id="excluded-pages" name="excluded_posts[]" multiple>
+                    <?php foreach ($pages as $page): 
+                        if (in_array($page->ID, $excluded_posts)): ?>
+                            <option value="<?php echo esc_attr($page->ID); ?>">
+                                <?php echo esc_html($page->post_title); ?> (ID: <?php echo esc_html($page->ID); ?>)
+                            </option>
+                        <?php endif;
+                    endforeach; ?>
+                </select>
+            </div>
+        </div>
+
+        <hr/>
+
+        <h2 class="title">Polylang Integration</h2>
+        <div class="polylang-settings">
+            <p class="description">
+                <ol>
+                    <li><strong>Locale Attributes:</strong> Integrates locale attributes from Polylang for locale-based filtering.</li>
+                    <li><strong>Language-Specific Search:</strong> Ensures results are relevant to the user's selected language.</li>
+                    <li><strong>Faceted Search by Locale:</strong> Enables search result refinement by language.</li>
+                    <li><strong>Autocomplete with Locale:</strong> Provides locale-filtered autocomplete suggestions.</li>
+                </ol>
+            </p>
+        </div>
+
+        <p class="submit">
+            <input type="submit" name="algolia_addons_save_settings" class="button-primary" value="Save Changes" />
+        </p>
+    </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const availableSelect = document.getElementById('available-pages');
+    const excludedSelect = document.getElementById('excluded-pages');
+    const addButton = document.getElementById('add-pages');
+    const removeButton = document.getElementById('remove-pages');
+
+    // Function to move selected options between select boxes
+    function moveSelectedOptions(fromSelect, toSelect) {
+        const selectedOptions = Array.from(fromSelect.selectedOptions);
+        selectedOptions.forEach(option => {
+            toSelect.appendChild(option);
+        });
+        updateButtonStates();
+    }
+
+    // Function to update button states
+    function updateButtonStates() {
+        addButton.disabled = availableSelect.selectedOptions.length === 0;
+        removeButton.disabled = excludedSelect.selectedOptions.length === 0;
+    }
+
+    // Event Listeners
+    addButton.addEventListener('click', () => moveSelectedOptions(availableSelect, excludedSelect));
+    removeButton.addEventListener('click', () => moveSelectedOptions(excludedSelect, availableSelect));
+
+    // Double-click handlers
+    availableSelect.addEventListener('dblclick', () => moveSelectedOptions(availableSelect, excludedSelect));
+    excludedSelect.addEventListener('dblclick', () => moveSelectedOptions(excludedSelect, availableSelect));
+
+    // Update button states on selection change
+    availableSelect.addEventListener('change', updateButtonStates);
+    excludedSelect.addEventListener('change', updateButtonStates);
+
+    // Form submission handler
+    document.querySelector('form').addEventListener('submit', function() {
+        // Select all options in the excluded select box
+        Array.from(excludedSelect.options).forEach(option => option.selected = true);
+    });
+
+    // Initial button state
+    updateButtonStates();
+});
+</script>
