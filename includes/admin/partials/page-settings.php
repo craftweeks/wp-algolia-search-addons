@@ -10,11 +10,16 @@ if (isset($_POST['algolia_addons_save_settings'])) {
     $excluded_posts = isset($_POST['excluded_posts']) ? array_map('intval', $_POST['excluded_posts']) : array();
     update_option('algolia_addons_excluded_posts', $excluded_posts);
     
+    $deployment_url = isset($_POST['deployment_url']) ? esc_url_raw($_POST['deployment_url']) : '';
+    update_option('algolia_addons_deployment_url', $deployment_url);
+    
     echo '<div class="notice notice-success is-dismissible"><p>Settings saved successfully!</p></div>';
 }
 
 // Get current settings
 $excluded_posts = get_option('algolia_addons_excluded_posts', array());
+$deployment_url = get_option('algolia_addons_deployment_url', '');
+
 // Get all published pages
 $pages = get_posts(array(
     'post_type' => 'page',
@@ -140,6 +145,13 @@ wp_enqueue_script('jquery-ui-dialog');
                 </ol>
             </p>
         </div>
+
+        <hr/>
+
+        <h2 class="title">WP-to-Static Support</h2>
+        <label for="deployment_url"><strong>Deployment URL:</strong></label>
+        <input type="url" name="deployment_url" value="<?php echo esc_attr($deployment_url); ?>" style="width: 100%; max-width: 400px;">
+        <p class="description">This URL will be used to rewrite URLs in search results for static site deployment.  Leave empty to use the default WordPress site URL.</p>
 
         <p class="submit">
             <input type="submit" name="algolia_addons_save_settings" class="button-primary" value="Save Changes" />

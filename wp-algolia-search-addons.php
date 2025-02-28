@@ -100,9 +100,55 @@ function enqueue_locale() {
 }
 add_action('wp_enqueue_scripts', 'enqueue_locale', 99);
 
+// URL Rewriting for Algolia Search
+function deployment_url() {
+    $url = get_option('algolia_addons_deployment_url');
+    return !empty($url) ? $url : site_url(); // Fallback to site_url if not set
+}
+
+function replace_algolia_post_shared_attributes_url($shared_attributes, $post) {
+    $shared_attributes['permalink'] = str_replace(
+        site_url(),
+        deployment_url(),
+        $shared_attributes['permalink']
+    );
+    return $shared_attributes;
+}
+add_filter('algolia_post_shared_attributes', 'replace_algolia_post_shared_attributes_url', 10, 2);
+add_filter('algolia_searchable_post_shared_attributes', 'replace_algolia_post_shared_attributes_url', 10, 2);
+
+function replace_algolia_term_record_url($record, $item) {
+    $record['permalink'] = str_replace(
+        site_url(),
+        deployment_url(),
+        $record['permalink']
+    );
+    return $record;
+}
+add_filter('algolia_term_record', 'replace_algolia_term_record_url', 10, 2);
+
+function replace_algolia_post_images_url(array $images) {
+    return array_map(
+        function($image) {
+            return array(
+                'url'    => str_replace(
+                    site_url(),
+                    deployment_url(),
+                    $image['url']
+                ),
+                'width'  => $image['width'],
+                'height' => $image['height'],
+            );
+        },
+        $images
+    );
+}
+add_filter('algolia_get_post_images', 'replace_algolia_post_images_url', 10, 1);
+
 // Register plugin settings
 function algolia_addons_register_settings() {
     register_setting('algolia_addons_settings', 'algolia_addons_excluded_posts');
+    register_setting('algolia_addons_settings', 'algolia_addons_deployment_url');
 }
 add_action('admin_init', 'algolia_addons_register_settings');
 

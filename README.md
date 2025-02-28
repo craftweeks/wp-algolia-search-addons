@@ -27,7 +27,9 @@
   3. **Faceted Search by Locale**: Enables locale-based faceted search for refined results
   4. **Autocomplete with Locale**: Provides locale-filtered autocomplete suggestions for multilingual users
 
-- **WP-to-Static Support**: Rewrites site URLs with deployment URLs for static site generation. *(Coming Soon)*
+- **WP-to-Static Support**:
+
+   1. **URL Rewrite**: Rewrites site URLs with deployment URLs for static site generation.
 
 ## Prerequisites
 
