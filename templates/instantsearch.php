@@ -121,6 +121,7 @@ get_header();
 					}),
 
 					instantsearch.widgets.configure({
+						filters: 'locale:"' + current_locale + '"',
 						hitsPerPage: 10,
 					}),
 
