@@ -3,7 +3,7 @@
 /*
  * Plugin Name:       WP Algolia Search Addons
  * Description:       Addons for WP Search with Algolia
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 5.0
  * Requires PHP:      7.4
  * Author:            Craftweeks
