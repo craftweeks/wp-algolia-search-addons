@@ -15,9 +15,6 @@
   - Added a dedicated settings page under **Settings > Algolia Search Addons**.  
   - UI components for managing excluded pages, Polylang integration toggle, and deployment URL.
 
-- **Locale Filter in Instant Search**
-  - Added a locale filter (`filters: 'locale:"' + current_locale + '"`) to Algolia's Instant Search configuration to ensure results are scoped to the active language.
-
 ### Changed
 - **Polylang Integration**  
   - Added conditional checks to enable/disable integration via settings (`should_integrate_polylang`).  
@@ -26,6 +23,11 @@
 - **Code Refactoring**  
   - Registered plugin settings (`algolia_addons_excluded_posts`, `algolia_addons_enable_polylang`, `algolia_addons_deployment_url`).  
   - Improved template loading logic to conditionally override Algolia templates only when needed.
+
+### Fixed
+
+- **Locale Filter in Instant Search**
+  - Added a locale filter (`filters: 'locale:"' + current_locale + '"`) to Algolia's Instant Search configuration to ensure results are scoped to the active language.
 
 ---
 
