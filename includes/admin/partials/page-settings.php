@@ -10,6 +10,9 @@ if (isset($_POST['algolia_addons_save_settings'])) {
     $excluded_posts = isset($_POST['excluded_posts']) ? array_map('intval', $_POST['excluded_posts']) : array();
     update_option('algolia_addons_excluded_posts', $excluded_posts);
     
+    $enable_polylang = isset($_POST['enable_polylang']) ? true : false;
+    update_option('algolia_addons_enable_polylang', $enable_polylang);
+    
     $deployment_url = isset($_POST['deployment_url']) ? esc_url_raw($_POST['deployment_url']) : '';
     update_option('algolia_addons_deployment_url', $deployment_url);
     
@@ -18,6 +21,7 @@ if (isset($_POST['algolia_addons_save_settings'])) {
 
 // Get current settings
 $excluded_posts = get_option('algolia_addons_excluded_posts', array());
+$enable_polylang = get_option('algolia_addons_enable_polylang', false);
 $deployment_url = get_option('algolia_addons_deployment_url', '');
 
 // Get all published pages
@@ -84,6 +88,49 @@ wp_enqueue_script('jquery-ui-dialog');
     opacity: 0.5;
     cursor: not-allowed;
 }
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 26px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 26px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #2196F3;
+}
+input:disabled + .slider {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
 </style>
 
 <div class="wrap">
@@ -136,7 +183,20 @@ wp_enqueue_script('jquery-ui-dialog');
 
         <h2 class="title">Polylang Integration</h2>
         <div class="polylang-settings">
+            <label class="switch">
+                <input type="checkbox" name="enable_polylang" 
+                    <?php echo $enable_polylang ? 'checked' : ''; ?> 
+                    <?php echo !is_polylang_active() ? 'disabled' : ''; ?>>
+                <span class="slider"></span>
+            </label>
             <p class="description">
+                <?php
+                if (!is_polylang_active()) {
+                    echo 'Polylang is not installed or activated. Please install and activate Polylang to enable this feature.';
+                } else {
+                    echo 'Enable Polylang integration for multilingual search support.';
+                }
+                ?>
                 <ol>
                     <li><strong>Locale Attributes:</strong> Integrates locale attributes from Polylang for locale-based filtering.</li>
                     <li><strong>Language-Specific Search:</strong> Ensures results are relevant to the user's selected language.</li>

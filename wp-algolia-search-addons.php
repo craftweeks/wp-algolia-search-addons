@@ -53,38 +53,46 @@ function custom_should_index_post( $should_index, WP_Post $post ) {
 add_filter('algolia_should_index_post', 'custom_should_index_post', 10, 2);
 add_filter('algolia_should_index_searchable_post', 'custom_should_index_post', 10, 2);
 
+// Function to check if Polylang is active
+function is_polylang_active() {
+    return defined('POLYLANG_VERSION');
+}
+
+// Function to check if Polylang integration should be used
+function should_integrate_polylang() {
+    return is_polylang_active() && get_option('algolia_addons_enable_polylang', false);
+}
+
 // Function to load the autocomplete template.
 function load_autocomplete_template($location, $file)
 {
-    // Check if the file is either 'autocomplete.php' or 'instantsearch.php'.
-    if (!in_array($file, ['autocomplete.php', 'instantsearch.php'])) {
-        return $location;
+    // Only load the custom template file if Polylang integration should be used and the file is either 'autocomplete.php' or 'instantsearch.php'.
+    if (should_integrate_polylang() && in_array($file, ['autocomplete.php', 'instantsearch.php'])) {
+        return ALGOLIA_ADDONS_PATH_TEMPLATE_PATH . $file;
     }
-
-    // Return the path to the template file.
-    return ALGOLIA_ADDONS_PATH_TEMPLATE_PATH . $file;
+    return $location;
 }
 add_filter('algolia_custom_template_location', 'load_autocomplete_template', 11, 2);
 
 // Add the locale of every post to every record of every post type indexed.
 function add_locales_to_records(array $attrs, WP_Post $post)
 {
-    // Check if the Polylang function exists and add the locale to the attributes.
-    if (function_exists('pll_get_post_language')) {
+    // Only add locale if Polylang integration should be used
+    if (should_integrate_polylang() && function_exists('pll_get_post_language')) {
         $attrs['locale'] = pll_get_post_language($post->ID, "locale");
     }
     return $attrs;
 }
-
 add_filter('algolia_post_shared_attributes', 'add_locales_to_records', 10, 2);
 add_filter('algolia_searchable_post_shared_attributes', 'add_locales_to_records', 10, 2);
 
 // Register the locale attribute as an Algolia facet which will allow us to filter on the currently displayed locale.
 function add_locale_to_facets(array $settings)
 {
-    // Add 'locale' to the attributes for faceting.
-    $settings['attributesForFaceting'][] = 'locale';
-
+    // Only add locale facet if Polylang integration should be used
+    if (should_integrate_polylang()) {
+        $settings['attributesForFaceting'][] = 'locale';
+    }
     return $settings;
 }
 add_filter('algolia_searchable_posts_index_settings', 'add_locale_to_facets');
@@ -93,10 +101,11 @@ add_filter('algolia_terms_index_settings', 'add_locale_to_facets');
 
 // Expose the current locale of the displayed page in JavaScript.
 function enqueue_locale() {
-    // Get and sanitize the current locale.
-    $current_locale = sanitize_text_field( get_locale() ); 
-    // Add the current locale as an inline script before the 'algolia-search' script.
-    wp_add_inline_script( 'algolia-search', sprintf('var current_locale = "%s";', $current_locale), 'before' );
+    // Only expose locale if Polylang integration should be used
+    if (should_integrate_polylang()) {
+        $current_locale = sanitize_text_field(get_locale());
+        wp_add_inline_script('algolia-search', sprintf('var current_locale = "%s";', $current_locale), 'before');
+    }
 }
 add_action('wp_enqueue_scripts', 'enqueue_locale', 99);
 
@@ -148,6 +157,7 @@ add_filter('algolia_get_post_images', 'replace_algolia_post_images_url', 10, 1);
 // Register plugin settings
 function algolia_addons_register_settings() {
     register_setting('algolia_addons_settings', 'algolia_addons_excluded_posts');
+    register_setting('algolia_addons_settings', 'algolia_addons_enable_polylang');
     register_setting('algolia_addons_settings', 'algolia_addons_deployment_url');
 }
 add_action('admin_init', 'algolia_addons_register_settings');
