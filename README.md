@@ -18,15 +18,18 @@
 
 ## Features
 
-- **Multilingual Support**: Integrates with Polylang to deliver locale-specific search results and suggestions, ensuring a tailored user experience for multilingual websites.
+- **Exclude Pages from Indexing**: Allows exclusion of specific pages from being indexed by Algolia, offering greater control over search results.
+
+- **Polylang Integration**: Integrates with Polylang to deliver locale-specific search results and suggestions, ensuring a tailored user experience for multilingual websites.
 
   1. **Locale Attributes**: Integrates Polylang locale attributes for locale-based search filtering
   2. **Language-Specific Search**: Delivers search results relevant to user's selected language
   3. **Faceted Search by Locale**: Enables locale-based faceted search for refined results
   4. **Autocomplete with Locale**: Provides locale-filtered autocomplete suggestions for multilingual users
 
-- **WP-to-Static Support**: Rewrites site URLs with deployment URLs for static site generation. *(Coming Soon)*
-- **Exclude from Indexing**: Allows exclusion of specific posts and pages from being indexed by Algolia, offering greater control over search results. *(Coming Soon)*
+- **WP-to-Static Support**:
+
+   1. **URL Rewrite**: Rewrites site URLs with deployment URLs for static site generation.
 
 ## Prerequisites
 
@@ -48,6 +51,10 @@
 4. **Configure Algolia**: Ensure you have the [WP Search with Algolia] plugin installed and configured. Index your searchable posts.
 
 5. **Configure Polylang**: Ensure you have the Polylang plugin installed and configured for multilingual support.
+
+## Configuration
+
+Once the plugin is installed and activated, navigate to the settings page by selecting **Settings** > **Algolia Search Addons** from the left-hand menu in the WordPress Admin dashboard. Here, you can configure the plugin to suit your specific needs.
 
 ## FAQ
 
