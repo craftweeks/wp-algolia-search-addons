@@ -5,7 +5,7 @@
  * @author  WebDevStudios <contact@webdevstudios.com>
  * @since   1.0.0
  *
- * @version 2.7.1
+ * @version 2.9.0
  * @package WebDevStudios\WPSWA
  */
 
@@ -122,7 +122,7 @@ get_header();
 
 					instantsearch.widgets.configure({
 						filters: 'locale:"' + current_locale + '"',
-						hitsPerPage: 10,
+						hitsPerPage: algolia.search_hits_per_page,
 					}),
 
 					/* Hits widget */
