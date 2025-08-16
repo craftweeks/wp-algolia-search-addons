@@ -47,6 +47,15 @@ wp_enqueue_script('jquery-ui-dialog');
 .multiselect-box {
     flex: 1;
     min-width: 200px;
+    display: flex;
+    flex-direction: column;
+}
+.multiselect-box input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 .multiselect-box select {
     width: 100%;
@@ -57,6 +66,7 @@ wp_enqueue_script('jquery-ui-dialog');
     border: 1px solid #ddd;
     border-radius: 4px;
     background: #fff;
+    flex-grow: 1;
 }
 .multiselect-box select option {
     padding: 4px 8px;
@@ -149,6 +159,7 @@ input:checked + .slider:before {
         <div class="multiselect-container">
             <div class="multiselect-box">
                 <h4>Available Pages</h4>
+                <input type="text" id="available-pages-search" placeholder="Search available pages...">
                 <select id="available-pages" multiple>
                     <?php foreach ($pages as $page): 
                         if (!in_array($page->ID, $excluded_posts)): ?>
@@ -167,6 +178,7 @@ input:checked + .slider:before {
             
             <div class="multiselect-box">
                 <h4>Excluded Pages</h4>
+                <input type="text" id="excluded-pages-search" placeholder="Search excluded pages...">
                 <select id="excluded-pages" name="excluded_posts[]" multiple>
                     <?php foreach ($pages as $page): 
                         if (in_array($page->ID, $excluded_posts)): ?>
@@ -194,7 +206,7 @@ input:checked + .slider:before {
                 if (!is_polylang_active()) {
                     echo 'Polylang is not installed or activated. Please install and activate Polylang to enable this feature.';
                 } else {
-                    echo 'Enable Polylang integration for multilingual search support.';
+                    echo 'Enable Polylang integration for multilingual search support. This feature enhances Algolia search by making it language-aware, ensuring that users receive search results in their selected language. For more details on configuring languages, please visit the <a href="' . admin_url('admin.php?page=mlang') . '">Polylang settings</a>.';
                 }
                 ?>
                 <ol>
@@ -225,6 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const excludedSelect = document.getElementById('excluded-pages');
     const addButton = document.getElementById('add-pages');
     const removeButton = document.getElementById('remove-pages');
+    const availableSearch = document.getElementById('available-pages-search');
+    const excludedSearch = document.getElementById('excluded-pages-search');
 
     // Function to move selected options between select boxes
     function moveSelectedOptions(fromSelect, toSelect) {
@@ -241,6 +255,16 @@ document.addEventListener('DOMContentLoaded', function() {
         removeButton.disabled = excludedSelect.selectedOptions.length === 0;
     }
 
+    // Function to filter options in a select box
+    function filterOptions(select, searchTerm) {
+        const options = Array.from(select.options);
+        options.forEach(option => {
+            const text = option.textContent.toLowerCase();
+            const shouldShow = text.includes(searchTerm.toLowerCase());
+            option.style.display = shouldShow ? '' : 'none';
+        });
+    }
+
     // Event Listeners
     addButton.addEventListener('click', () => moveSelectedOptions(availableSelect, excludedSelect));
     removeButton.addEventListener('click', () => moveSelectedOptions(excludedSelect, availableSelect));
@@ -252,6 +276,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update button states on selection change
     availableSelect.addEventListener('change', updateButtonStates);
     excludedSelect.addEventListener('change', updateButtonStates);
+
+    // Search event listeners
+    availableSearch.addEventListener('input', () => filterOptions(availableSelect, availableSearch.value));
+    excludedSearch.addEventListener('input', () => filterOptions(excludedSelect, excludedSearch.value));
 
     // Form submission handler
     document.querySelector('form').addEventListener('submit', function() {
