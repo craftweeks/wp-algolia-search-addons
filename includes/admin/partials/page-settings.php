@@ -198,12 +198,12 @@ input:checked + .slider:before {
             <label class="switch">
                 <input type="checkbox" name="enable_polylang" 
                     <?php echo $enable_polylang ? 'checked' : ''; ?> 
-                    <?php echo !is_polylang_active() ? 'disabled' : ''; ?>>
+                    <?php echo !$this->is_polylang_active() ? 'disabled' : ''; ?>>
                 <span class="slider"></span>
             </label>
             <p class="description">
                 <?php
-                if (!is_polylang_active()) {
+                if (!$this->is_polylang_active()) {
                     echo 'Polylang is not installed or activated. Please install and activate Polylang to enable this feature.';
                 } else {
                     echo 'Enable Polylang integration for multilingual search support. This feature enhances Algolia search by making it language-aware, ensuring that users receive search results in their selected language. For more details on configuring languages, please visit the <a href="' . admin_url('admin.php?page=mlang') . '">Polylang settings</a>.';
