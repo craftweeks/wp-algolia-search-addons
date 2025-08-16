@@ -7,6 +7,7 @@ This documentation provides detailed information about the features, configurati
 ## Table of Contents
 
 - [Features](features.md)
+- [Override Pages with Instantsearch](override-search-pages-with-instantsearch.md)
 - [Polylang Integration](polylang-integration.md)
 - [WP-to-Static Support](wp-to-static-support.md)
 - [Debugging Guide](debugging.md)

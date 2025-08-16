@@ -28,6 +28,7 @@
   - **Autocomplete with Locale**: Provides locale-filtered autocomplete suggestions for multilingual users.
 - **WP-to-Static Support**:
   - **URL Rewrite**: Rewrites site URLs with deployment URLs for static site generation.
+- **Override Pages with Instantsearch**: Allows you to override specific pages with the Algolia instantsearch page, creating a dedicated search page on your site.
 
 ## Prerequisites
 
@@ -52,6 +53,7 @@ Once the plugin is installed and activated, navigate to the settings page by sel
 
 The settings page allows you to:
 - **Exclude Pages**: Select pages to exclude from Algolia search indexing. You can search for pages and move them between the "Available" and "Excluded" lists.
+- **Override Search Pages**: Select pages to override with the Algolia instant search page.
 - **Enable/Disable Polylang Integration**: Toggle the Polylang integration on or off.
 - **Set Deployment URL**: Configure a deployment URL for WP-to-Static support.
 
@@ -59,7 +61,9 @@ For more detailed documentation, please refer to our [documentation page](docs/i
 
 ## Screenshots
 
-![Settings page](/docs/screeshots/settings.jpg)
+![Sidebar Menu](docs/screenshots/sidebar-menu.jpg)
+
+![Settings page](docs/screenshots/settings.jpg)
 
 ## FAQ
 
