@@ -9,3 +9,4 @@ This documentation provides detailed information about the features, configurati
 - [Features](features.md)
 - [Polylang Integration](polylang-integration.md)
 - [WP-to-Static Support](wp-to-static-support.md)
+- [Debugging Guide](debugging.md)
