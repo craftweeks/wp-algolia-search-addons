@@ -10,7 +10,7 @@ The settings page provides an intuitive user interface to manage the excluded pa
 
 ## Polylang Integration
 
-This feature integrates the plugin with the Polylang plugin to provide a seamless multilingual search experience.
+This feature provides optional integration with the Polylang plugin for a seamless multilingual search experience. If Polylang is active, you can enable this feature to link search to specific languages.
 
 When this feature is enabled, the plugin will:
 - Add the locale of every post to the Algolia records.

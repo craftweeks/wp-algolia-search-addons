@@ -13,9 +13,9 @@ When this feature is enabled, the plugin will automatically:
 
 ## Configuration
 
-To enable the Polylang integration, you need to have the Polylang plugin installed and activated.
+To use the Polylang integration, the Polylang plugin must be installed and activated on your WordPress site.
 
-Once Polylang is activated, you can enable the integration by going to the **Settings > Algolia Search Addons** page and toggling the "Enable Polylang Integration" switch.
+Once Polylang is active, you can enable the integration by going to the **Settings > Algolia Search Addons** page and toggling the "Enable Polylang Integration" switch. If Polylang is not active, this option will be disabled.
 
 ## Usage
 
