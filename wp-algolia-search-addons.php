@@ -95,6 +95,9 @@ final class WP_Algolia_Search_Addons
         // Admin settings
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_menu', [$this, 'add_plugin_menu']);
+
+        // Override page template
+        add_filter('template_include', [$this, 'override_page_template'], 99);
     }
 
     /**
@@ -275,6 +278,7 @@ final class WP_Algolia_Search_Addons
     public function register_settings()
     {
         register_setting('algolia_addons_settings', 'algolia_addons_excluded_posts');
+        register_setting('algolia_addons_settings', 'algolia_addons_override_pages');
         register_setting('algolia_addons_settings', 'algolia_addons_enable_polylang');
         register_setting('algolia_addons_settings', 'algolia_addons_deployment_url');
     }
@@ -299,6 +303,64 @@ final class WP_Algolia_Search_Addons
     public function render_settings_page()
     {
         include_once ALGOLIA_ADDONS_PATH . 'includes/admin/partials/page-settings.php';
+    }
+
+    /**
+     * Override page template with Algolia instantsearch page.
+     *
+     * @param string $template
+     * @return string
+     */
+    public function override_page_template($template)
+    {
+        if (!is_page()) {
+            return $template;
+        }
+
+        $override_pages = get_option('algolia_addons_override_pages', array());
+        if (!in_array(get_the_ID(), $override_pages)) {
+            return $template;
+        }
+
+        $this->enqueue_instantsearch_assets();
+
+        $algolia_settings = get_option('algolia_settings', array());
+        $template_name = isset($algolia_settings['instantsearch_template']) && $algolia_settings['instantsearch_template'] === 'modern' ? 'instantsearch-modern.php' : 'instantsearch.php';
+
+        return ALGOLIA_ADDONS_PATH_TEMPLATE_PATH . $template_name;
+    }
+
+    /**
+     * Enqueue instantsearch assets.
+     */
+    private function enqueue_instantsearch_assets()
+    {
+        $plugin_data = $this->get_algolia_plugin_data();
+        $version = isset($plugin_data['Version']) ? $plugin_data['Version'] : '2.8.1'; // Fallback version
+
+        wp_enqueue_style('algolia-instantsearch', plugins_url('css/algolia-instantsearch.css', 'wp-search-with-algolia/wp-search-with-algolia.php'), [], $version);
+        wp_enqueue_script('algolia-instantsearch', plugins_url('js/instantsearch.js/dist/instantsearch.production.min.js', 'wp-search-with-algolia/wp-search-with-algolia.php'), [], $version, true);
+    }
+
+    /**
+     * Get WP Search with Algolia plugin data.
+     *
+     * @return array
+     */
+    private function get_algolia_plugin_data()
+    {
+        if (!function_exists('get_plugins')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        $plugins = get_plugins();
+        foreach ($plugins as $plugin_file => $plugin_data) {
+            if (strpos($plugin_file, 'wp-search-with-algolia.php') !== false) {
+                return $plugin_data;
+            }
+        }
+
+        return [];
     }
 }
 
