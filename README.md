@@ -10,26 +10,25 @@
 1. [Features](#features)
 2. [Prerequisites](#prerequisites)
 3. [Installation](#installation)
-4. [FAQ](#faq)
-5. [Contributing](#contributing)
-6. [Changelog](#changelog)
-7. [License](#license)
-8. [Acknowledgements](#acknowledgements)
+4. [Configuration](#configuration)
+5. [Screenshots](#screenshots)
+6. [FAQ](#faq)
+7. [Contributing](#contributing)
+8. [Changelog](#changelog)
+9. [License](#license)
+10. [Acknowledgements](#acknowledgements)
 
 ## Features
 
-- **Exclude Pages from Indexing**: Allows exclusion of specific pages from being indexed by Algolia, offering greater control over search results.
-
+- **Exclude Pages from Indexing**: Allows exclusion of specific pages from being indexed by Algolia, offering greater control over search results. The intuitive UI allows you to easily add or remove pages from the exclusion list.
 - **Polylang Integration**: Integrates with Polylang to deliver locale-specific search results and suggestions, ensuring a tailored user experience for multilingual websites.
-
-  1. **Locale Attributes**: Integrates Polylang locale attributes for locale-based search filtering
-  2. **Language-Specific Search**: Delivers search results relevant to user's selected language
-  3. **Faceted Search by Locale**: Enables locale-based faceted search for refined results
-  4. **Autocomplete with Locale**: Provides locale-filtered autocomplete suggestions for multilingual users
-
+  - **Locale Attributes**: Integrates Polylang locale attributes for locale-based search filtering.
+  - **Language-Specific Search**: Delivers search results relevant to the user's selected language.
+  - **Faceted Search by Locale**: Enables locale-based faceted search for refined results.
+  - **Autocomplete with Locale**: Provides locale-filtered autocomplete suggestions for multilingual users.
 - **WP-to-Static Support**:
-
-   1. **URL Rewrite**: Rewrites site URLs with deployment URLs for static site generation.
+  - **URL Rewrite**: Rewrites site URLs with deployment URLs for static site generation.
+- **Override Pages with Instantsearch**: Allows you to override specific pages with the Algolia instantsearch page, creating a dedicated search page on your site.
 
 ## Prerequisites
 
@@ -41,20 +40,30 @@
 
 1. **Download the Plugin**: Clone or download the repository to your local machine.
    ```bash
-   git clone https://github.com/yourusername/wp-algolia-search-addons.git
+   git clone https://github.com/craftweeks/wp-algolia-search-addons.git
    ```
-
 2. **Upload to WordPress**: Upload the plugin folder to the `/wp-content/plugins/` directory.
-
 3. **Activate the Plugin**: Activate the plugin through the 'Plugins' menu in WordPress.
-
 4. **Configure Algolia**: Ensure you have the [WP Search with Algolia] plugin installed and configured. Index your searchable posts.
-
 5. **Configure Polylang**: Ensure you have the Polylang plugin installed and configured for multilingual support.
 
 ## Configuration
 
 Once the plugin is installed and activated, navigate to the settings page by selecting **Settings** > **Algolia Search Addons** from the left-hand menu in the WordPress Admin dashboard. Here, you can configure the plugin to suit your specific needs.
+
+The settings page allows you to:
+- **Exclude Pages**: Select pages to exclude from Algolia search indexing. You can search for pages and move them between the "Available" and "Excluded" lists.
+- **Override Search Pages**: Select pages to override with the Algolia instant search page.
+- **Enable/Disable Polylang Integration**: Toggle the Polylang integration on or off.
+- **Set Deployment URL**: Configure a deployment URL for WP-to-Static support.
+
+For more detailed documentation, please refer to our [documentation page](docs/index.md).
+
+## Screenshots
+
+![Sidebar Menu](docs/screenshots/sidebar-menu.jpg)
+
+![Settings page](docs/screenshots/settings.jpg)
 
 ## FAQ
 

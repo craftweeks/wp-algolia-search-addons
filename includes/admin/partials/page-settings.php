@@ -9,6 +9,9 @@ if (isset($_POST['algolia_addons_save_settings'])) {
     
     $excluded_posts = isset($_POST['excluded_posts']) ? array_map('intval', $_POST['excluded_posts']) : array();
     update_option('algolia_addons_excluded_posts', $excluded_posts);
+
+    $override_pages = isset($_POST['override_pages']) ? array_map('intval', $_POST['override_pages']) : array();
+    update_option('algolia_addons_override_pages', $override_pages);
     
     $enable_polylang = isset($_POST['enable_polylang']) ? true : false;
     update_option('algolia_addons_enable_polylang', $enable_polylang);
@@ -21,6 +24,7 @@ if (isset($_POST['algolia_addons_save_settings'])) {
 
 // Get current settings
 $excluded_posts = get_option('algolia_addons_excluded_posts', array());
+$override_pages = get_option('algolia_addons_override_pages', array());
 $enable_polylang = get_option('algolia_addons_enable_polylang', false);
 $deployment_url = get_option('algolia_addons_deployment_url', '');
 
@@ -47,6 +51,15 @@ wp_enqueue_script('jquery-ui-dialog');
 .multiselect-box {
     flex: 1;
     min-width: 200px;
+    display: flex;
+    flex-direction: column;
+}
+.multiselect-box input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 .multiselect-box select {
     width: 100%;
@@ -57,6 +70,7 @@ wp_enqueue_script('jquery-ui-dialog');
     border: 1px solid #ddd;
     border-radius: 4px;
     background: #fff;
+    flex-grow: 1;
 }
 .multiselect-box select option {
     padding: 4px 8px;
@@ -149,6 +163,7 @@ input:checked + .slider:before {
         <div class="multiselect-container">
             <div class="multiselect-box">
                 <h4>Available Pages</h4>
+                <input type="text" id="available-pages-search" placeholder="Search available pages...">
                 <select id="available-pages" multiple>
                     <?php foreach ($pages as $page): 
                         if (!in_array($page->ID, $excluded_posts)): ?>
@@ -167,9 +182,50 @@ input:checked + .slider:before {
             
             <div class="multiselect-box">
                 <h4>Excluded Pages</h4>
+                <input type="text" id="excluded-pages-search" placeholder="Search excluded pages...">
                 <select id="excluded-pages" name="excluded_posts[]" multiple>
                     <?php foreach ($pages as $page): 
                         if (in_array($page->ID, $excluded_posts)): ?>
+                            <option value="<?php echo esc_attr($page->ID); ?>">
+                                <?php echo esc_html($page->post_title); ?> (ID: <?php echo esc_html($page->ID); ?>)
+                            </option>
+                        <?php endif;
+                    endforeach; ?>
+                </select>
+            </div>
+        </div>
+
+        <hr/>
+
+        <h2 class="title">Override Pages</h2>
+        <p class="description">Select pages to override with the Algolia instant search page.</p>
+        
+        <div class="multiselect-container">
+            <div class="multiselect-box">
+                <h4>Available Pages</h4>
+                <input type="text" id="available-override-pages-search" placeholder="Search available pages...">
+                <select id="available-override-pages" multiple>
+                    <?php foreach ($pages as $page): 
+                        if (!in_array($page->ID, $override_pages)): ?>
+                            <option value="<?php echo esc_attr($page->ID); ?>">
+                                <?php echo esc_html($page->post_title); ?> (ID: <?php echo esc_html($page->ID); ?>)
+                            </option>
+                        <?php endif;
+                    endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="multiselect-controls">
+                <button type="button" id="add-override-pages" aria-label="Move selected pages to override list">›</button>
+                <button type="button" id="remove-override-pages" aria-label="Move selected pages to available list">‹</button>
+            </div>
+            
+            <div class="multiselect-box">
+                <h4>Overridden Search Pages</h4>
+                <input type="text" id="override-pages-search" placeholder="Search overridden pages...">
+                <select id="override-pages" name="override_pages[]" multiple>
+                    <?php foreach ($pages as $page): 
+                        if (in_array($page->ID, $override_pages)): ?>
                             <option value="<?php echo esc_attr($page->ID); ?>">
                                 <?php echo esc_html($page->post_title); ?> (ID: <?php echo esc_html($page->ID); ?>)
                             </option>
@@ -186,15 +242,15 @@ input:checked + .slider:before {
             <label class="switch">
                 <input type="checkbox" name="enable_polylang" 
                     <?php echo $enable_polylang ? 'checked' : ''; ?> 
-                    <?php echo !is_polylang_active() ? 'disabled' : ''; ?>>
+                    <?php echo !$this->is_polylang_active() ? 'disabled' : ''; ?>>
                 <span class="slider"></span>
             </label>
             <p class="description">
                 <?php
-                if (!is_polylang_active()) {
+                if (!$this->is_polylang_active()) {
                     echo 'Polylang is not installed or activated. Please install and activate Polylang to enable this feature.';
                 } else {
-                    echo 'Enable Polylang integration for multilingual search support.';
+                    echo 'Enable Polylang integration for multilingual search support. This feature enhances Algolia search by making it language-aware, ensuring that users receive search results in their selected language. For more details on configuring languages, please visit the <a href="' . admin_url('admin.php?page=mlang') . '">Polylang settings</a>.';
                 }
                 ?>
                 <ol>
@@ -221,45 +277,82 @@ input:checked + .slider:before {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Exclude Pages
     const availableSelect = document.getElementById('available-pages');
     const excludedSelect = document.getElementById('excluded-pages');
     const addButton = document.getElementById('add-pages');
     const removeButton = document.getElementById('remove-pages');
+    const availableSearch = document.getElementById('available-pages-search');
+    const excludedSearch = document.getElementById('excluded-pages-search');
 
-    // Function to move selected options between select boxes
     function moveSelectedOptions(fromSelect, toSelect) {
         const selectedOptions = Array.from(fromSelect.selectedOptions);
-        selectedOptions.forEach(option => {
-            toSelect.appendChild(option);
-        });
+        selectedOptions.forEach(option => toSelect.appendChild(option));
         updateButtonStates();
     }
 
-    // Function to update button states
     function updateButtonStates() {
-        addButton.disabled = availableSelect.selectedOptions.length === 0;
-        removeButton.disabled = excludedSelect.selectedOptions.length === 0;
+        if (addButton) addButton.disabled = availableSelect.selectedOptions.length === 0;
+        if (removeButton) removeButton.disabled = excludedSelect.selectedOptions.length === 0;
     }
 
-    // Event Listeners
-    addButton.addEventListener('click', () => moveSelectedOptions(availableSelect, excludedSelect));
-    removeButton.addEventListener('click', () => moveSelectedOptions(excludedSelect, availableSelect));
+    function filterOptions(select, searchTerm) {
+        Array.from(select.options).forEach(option => {
+            option.style.display = option.textContent.toLowerCase().includes(searchTerm.toLowerCase()) ? '' : 'none';
+        });
+    }
 
-    // Double-click handlers
-    availableSelect.addEventListener('dblclick', () => moveSelectedOptions(availableSelect, excludedSelect));
-    excludedSelect.addEventListener('dblclick', () => moveSelectedOptions(excludedSelect, availableSelect));
+    if (availableSelect) {
+        addButton.addEventListener('click', () => moveSelectedOptions(availableSelect, excludedSelect));
+        removeButton.addEventListener('click', () => moveSelectedOptions(excludedSelect, availableSelect));
+        availableSelect.addEventListener('dblclick', () => moveSelectedOptions(availableSelect, excludedSelect));
+        excludedSelect.addEventListener('dblclick', () => moveSelectedOptions(excludedSelect, availableSelect));
+        availableSelect.addEventListener('change', updateButtonStates);
+        excludedSelect.addEventListener('change', updateButtonStates);
+        availableSearch.addEventListener('input', () => filterOptions(availableSelect, availableSearch.value));
+        excludedSearch.addEventListener('input', () => filterOptions(excludedSelect, excludedSearch.value));
+        updateButtonStates();
+    }
 
-    // Update button states on selection change
-    availableSelect.addEventListener('change', updateButtonStates);
-    excludedSelect.addEventListener('change', updateButtonStates);
+    // Override Pages
+    const availableOverrideSelect = document.getElementById('available-override-pages');
+    const overrideSelect = document.getElementById('override-pages');
+    const addOverrideButton = document.getElementById('add-override-pages');
+    const removeOverrideButton = document.getElementById('remove-override-pages');
+    const availableOverrideSearch = document.getElementById('available-override-pages-search');
+    const overrideSearch = document.getElementById('override-pages-search');
+
+    function moveOverrideSelectedOptions(fromSelect, toSelect) {
+        const selectedOptions = Array.from(fromSelect.selectedOptions);
+        selectedOptions.forEach(option => toSelect.appendChild(option));
+        updateOverrideButtonStates();
+    }
+
+    function updateOverrideButtonStates() {
+        if (addOverrideButton) addOverrideButton.disabled = availableOverrideSelect.selectedOptions.length === 0;
+        if (removeOverrideButton) removeOverrideButton.disabled = overrideSelect.selectedOptions.length === 0;
+    }
+
+    if (availableOverrideSelect) {
+        addOverrideButton.addEventListener('click', () => moveOverrideSelectedOptions(availableOverrideSelect, overrideSelect));
+        removeOverrideButton.addEventListener('click', () => moveOverrideSelectedOptions(overrideSelect, availableOverrideSelect));
+        availableOverrideSelect.addEventListener('dblclick', () => moveOverrideSelectedOptions(availableOverrideSelect, overrideSelect));
+        overrideSelect.addEventListener('dblclick', () => moveOverrideSelectedOptions(overrideSelect, availableOverrideSelect));
+        availableOverrideSelect.addEventListener('change', updateOverrideButtonStates);
+        overrideSelect.addEventListener('change', updateOverrideButtonStates);
+        availableOverrideSearch.addEventListener('input', () => filterOptions(availableOverrideSelect, availableOverrideSearch.value));
+        overrideSearch.addEventListener('input', () => filterOptions(overrideSelect, overrideSearch.value));
+        updateOverrideButtonStates();
+    }
 
     // Form submission handler
     document.querySelector('form').addEventListener('submit', function() {
-        // Select all options in the excluded select box
-        Array.from(excludedSelect.options).forEach(option => option.selected = true);
+        if (excludedSelect) {
+            Array.from(excludedSelect.options).forEach(option => option.selected = true);
+        }
+        if (overrideSelect) {
+            Array.from(overrideSelect.options).forEach(option => option.selected = true);
+        }
     });
-
-    // Initial button state
-    updateButtonStates();
 });
 </script>

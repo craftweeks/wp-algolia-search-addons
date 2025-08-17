@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0] - 2025-08-17
+
+### Added
+- **Override Search Pages with Instantsearch**
+  - New admin interface to select pages to be replaced with the Algolia instantsearch page.
+  - Implemented `template_include` filter to override the page template.
+  - Enqueue instantsearch assets from the main WP Search with Algolia plugin.
+- **New Debugging Guide:** A new debugging guide has been added to the documentation to help users troubleshoot common issues.
+
+### Changed
+- **Refactored Plugin Structure:** The plugin has been refactored to use a more modern, object-oriented approach, improving maintainability and extensibility.
+- **Optional Polylang Integration:** The Polylang integration is now optional and can be enabled or disabled in the settings.
+- **Improved Admin UI/UX:** The admin settings page has been updated for a better user experience.
+- **Updated Documentation:** All documentation has been updated to reflect the new features and changes.
+
 ## [0.2.0] - 2025-02-28
 
 ### Added

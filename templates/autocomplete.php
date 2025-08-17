@@ -111,10 +111,11 @@
 					attributesToSnippet: [
 						'content:10'
 					],
-					filters: `locale: "${current_locale}"`, // This is the added line.
+					filters: (typeof current_locale !== 'undefined' && current_locale) ? `locale: "${current_locale}"` : '',
 					highlightPreTag: '__ais-highlight__',
 					highlightPostTag: '__/ais-highlight__'
 				} ),
+				debounce: config['debounce'],
 				templates: {
 					header: function () {
 						return wp.template( 'autocomplete-header' )( {
